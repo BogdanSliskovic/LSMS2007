@@ -14,7 +14,8 @@ urban - dve kategorije (Grad, Selo)
 region - četiri kategorije (Beograd, Vojvodina, Zapadna Srbija i Šumadija, Južna i jugoistočna Srbija)
 
 Počinjem sa uvozom neophodnih biblioteka i podešavanjem prikaza numeričkih vrednosti — brojevi su zaokruženi na dve decimale, a hiljade su razdvojene tačkom radi lakšeg čitanja.
-```import pandas as pd
+```
+# import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
