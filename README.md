@@ -26,4 +26,5 @@ def form(value):
         return locale.format_string('%.2f', value, grouping=True)
     return str(value)
 pd.options.display.float_format = lambda x: form(x)
-np.set_printoptions(formatter={'all': lambda x: form(x)})```
+np.set_printoptions(formatter={'all': lambda x: form(x)})
+```
