@@ -23,7 +23,7 @@ Anketna pitanja za odabrane varijable:
 
 ## Struktura projekta
 
-- [TUPA.ipynb](TUPA.ipynb)  
+- [TUPE.ipynb](TUPE.ipynb)  
   Glavni Jupyter notebook sa detaljno iskomentarisanim analizama i primenom svih metoda.  
   Kroz ovaj fajl se vodi ceo tok seminara – od učitavanja podataka do zaključaka.
 
