@@ -1,7 +1,25 @@
 # Teorija uzoraka i planiranje eksperimenata – LSMS Srbija 2007
 
-Ovaj projekat je seminarski rad iz predmeta **Teorija uzoraka i planiranje eksperimenata**.  
-U radu se koriste podaci iz LSMS ankete u Srbiji iz 2007. godine za ocenjivanje prosečne i ukupne mesečne zarade, primenom različitih metoda uzorkovanja i statističke analize.
+U ovom radu korišćeni su podaci iz ankete Living Standards Measurement Study (LSMS), koju je u ime Svetske banke sproveo Republički zavod za statistiku u maju i junu 2007. godine na teritoriji Republike Srbije. Ova anketa pruža detaljne informacije o životnim uslovima, ekonomskim aktivnostima i demografskim karakteristikama stanovnika Srbije, a njen cilj je da pomogne u boljem razumevanju faktora koji utiču na socijalni i ekonomski status građana. Podaci iz LSMS-a omogućavaju analizu različitih aspekata života, a u ovom radu fokusiraću se na analizu mesečnih zarada, kako bih utvrdio koji faktori utiču na njihove varijacije u Srbiji i u kojoj meri svaki od njih doprinosi tim razlikama. Prosečna mesečna zarada korišćena je kao pokazatelj ekonomske situacije, pružajući uvid u životne uslove prosečnog stanovnika zemlje. Takođe, ukupne godišnje zarade predstavljaju značajan pokazatelj ekonomske situacije, jer direktno utiču na bruto domaći proizvod zemlje.
+
+Anketna pitanja za odabrane varijable:
+
+	-plata: Neto prihod prethodnog meseca od glavnog posla
+
+	-obrazovanje: U upitniku je ispitanicima data ISCED skala, varijabla prekodirana tako da predstavlja godine obrazovanja
+
+	-obr3: Tri obrazovne kategorije (osnovna, srednja, visoka škola)
+
+	-starost: Godine ispitanika u trenutku anketiranja
+
+	-satiRada: Koliko sati je ispitanik radio na glavnom poslu u toku prethodne nedelje
+
+	-zene: dve kategorije (Zena, Muskarac)
+
+	-urban: dve kategorije (Grad, Selo)
+
+	-region: četiri kategorije (Beograd, Vojvodina, Zapadna Srbija i Šumadija, Južna i jugoistočna Srbija)
+
 
 ## Struktura projekta
 
