@@ -1,7 +1,19 @@
 from klase.funkcije import *
 
 class Bootstrapping():
+    ''' Klasa za primenu metode uzorkovanja sa vraćanjem na DataFrame-u radi procene srednje vrednosti, standardne devijacije,
+    intervala poverenja, kao i određivanja potrebne veličine uzorka.'''
     def __init__(self, df, alfa = None, n=None):
+        '''df : pandas.DataFrame
+        alfa : float ili lista float-ova, opciono
+            Nivo/i značajnosti za određivanje intervala poverenja.
+            Podrazumevane vrednosti su [0.1, 0.05, 0.01].
+        
+            Ako je unet float/int, vrednost mora biti između 0 i 1.
+            Ako je uneta lista, sve vrednosti moraju biti između 0 i 1.
+        
+        n : int, opciono
+            Veličina uzorka za bootstrap. Ukoliko nije navedeno, koristi se 10% od ukupne veličine DataFrame-a.'''
         self.df = df
         default = [0.1, 0.05, 0.01]
         if alfa is None:
@@ -20,6 +32,7 @@ class Bootstrapping():
         self.N = len(df)
 
     def fit(self, k, seed=42):
+        ''' Kreira k uzoraka sa vraćanjem i računa njihove srednje vrednosti i standardne devijacije'''
         self.sredineUzoraka = []
         self.standardneDevijacije = []
         for i in range(k):
@@ -31,13 +44,17 @@ class Bootstrapping():
 
     @property
     def sredina(self):
+        ''' Prosečna vrednost srednjih vrednosti bootstrap uzoraka'''
         return self.sredineUzoraka.mean()
 
     @property
     def std(self):
+        ''' Prosečna vrednost standardnih devijacija bootstrap uzoraka'''
         return self.standardneDevijacije.mean()
 
     def interval(self, alfa = None, x = None):
+        '''Računa intervale poverenja za srednje vrednosti uzoraka
+        za zadate nivoe značajnosti'''
         x = self.sredineUzoraka if x is None else x
         alfa = self.alfa if alfa is None else alfa
         alfa = np.atleast_1d(alfa)
@@ -50,11 +67,14 @@ class Bootstrapping():
         return pd.DataFrame(intervali, columns=["donja", "gornja"], index = [f"{int((1 - a) * 100)}%" for a in alfa])
 
     def d(self, alfa = None):
+        ''' Polovina širine intervala poverenja za zadati nivo značajnosti alfa.'''
         alfa = self.alfa if alfa is None else alfa
         intervals = self.interval(alfa)
         return ((intervals["gornja"] - intervals["donja"]) / 2).rename('d')
 
     def plotDist(self, alfa = None, x = None, target = None):
+        ''' Vizuelizuje distribuciju srednjih vrednosti iz realizovanih uzoraka
+        sa intervalima poverenja i opcionim ciljnim prosekom (koristi se u klasi PSU i SSU)'''
         x = self.sredineUzoraka if x is None else x
         alfa = self.alfa if alfa is None else alfa
         boje = plt.cm.tab10.colors
@@ -78,6 +98,7 @@ class Bootstrapping():
         plt.show()
 
     def obimUzorka(self, alfa = None):
+        ''' Računa optimalni obim uzorka za svaki nivo značajnosti'''
         alfa = self.alfa if alfa is None else alfa
         alfa = np.atleast_1d(alfa)
         nList, dList, indeksi = [], [], []
@@ -96,6 +117,7 @@ class Bootstrapping():
 
     @property
     def summary(self):
+        '''Prikaz svih ključnih statistika i Jarque-Bera testa'''
         data = pd.Series({"Prosečna sredina": self.sredina, "Prosečna standardna devijacija": self.std})
         
         d = self.d()

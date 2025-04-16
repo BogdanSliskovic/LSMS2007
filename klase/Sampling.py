@@ -4,8 +4,7 @@ from klase.Bootstrapping import Bootstrapping
 
 
 class PSU:
-    '''
-    Klasa za ocenjivanje sredine i totala populacije Prostim Slucajnim Uzorkom:
+    '''Klasa za ocenjivanje sredine i totala populacije Prostim Slucajnim Uzorkom:
     - količničko ocenjivanje,
     - regresiono ocenjivanje (koristeći ONK model).
     
@@ -16,7 +15,7 @@ class PSU:
     X : pd.DataFrame
         Matrica objašnjavajućih promenljivih za celu populaciju.
     Y : pd.Series
-        Zavisna promenljiva (npr. 'plata') za celu populaciju.
+        Zavisna promenljiva za celu populaciju.
     n : int
         Veličina slučajnog uzorka.
     kategorije : list[str], opciono
@@ -31,15 +30,13 @@ class PSU:
     df : pd.DataFrame
         Kompletan skup podataka.
     uzorak : pd.DataFrame
-        Nasumično izabrani uzorak podataka.
+        Nasumično izabrani prost slučajan uzorak podataka.
     X, x : pd.DataFrame
         Matrice objašnjavajućih promenljivih za populaciju i uzorak.
     Y, y : pd.Series
         Zavisne promenljive za populaciju i uzorak.
     Ym, ym : float
-        Srednje vrednosti zavisne promenljive u populaciji i uzorku.
-    '''
-        
+        Srednje vrednosti zavisne promenljive u populaciji i uzorku.'''
     def __init__(self, df, X, Y, n, kategorije = None, alfa= [0.1, 0.05, 0.01], seed=42):
         self.df = df.copy()
         self.n = n
@@ -68,10 +65,7 @@ class PSU:
 
     @property
     def describe(self):
-        '''
-        Prikazuje opisne statistike za populaciju i uzorak, 
-        uključujući totale mesečnih zarada i godina obrazovanja.
-        '''
+        ''' Prikazuje opisne statistike za populaciju i uzorak, uključujući totale mesečnih zarada i godina obrazovanja.'''
         print('--- OPIS PODATAKA ---\n')
     
         print('Uzorak:')
@@ -90,15 +84,13 @@ class PSU:
 
     
     def kolicnickoOcenjivanje(self, var='obrazovanje'):
-        '''
-        Količničko ocenjivanje sredine i totala Y, 
+        '''Količničko ocenjivanje sredine i totala Y, 
         sa pristrasnošću i intervalima poverenja.
 
         Parametri:
         ----------
         var : str
-            Promenljiva za količničko ocenjivanje.
-        '''
+            Promenljiva za količničko ocenjivanje.'''
         x = self.x[var]
         X = self.X[var]
 
@@ -136,14 +128,12 @@ class PSU:
         self.SKGR = pristrastnostR**2 + SYm**2
 
     def regresionoOcenjivanje(self, alfa=0.1):
-        '''
-        Regresiono ocenjivanje sredine i totala korišćenjem ONK modela.
+        ''' Regresiono ocenjivanje sredine i totala korišćenjem ONK modela.
     
         Parametri:
         ----------
         alfa : float
-            Nivo značajnosti za eliminaciju promenljivih.
-        '''
+            Nivo značajnosti za eliminaciju promenljivih. '''
         print('\n--- REGRESIONO OCENJIVANJE ---')
     
         self.model.fit(self.X, self.Y)
@@ -220,8 +210,7 @@ class PSU:
         display(rezultati_skg)
 
     def intervaliPoverenja(self, ocena, stdev, parametar = None):
-        """
-        Formira DataFrame sa intervalima poverenja za datu ocenu.
+        ''' Formira DataFrame sa intervalima poverenja za datu ocenu.
     
         Parametri:
         ----------
@@ -229,9 +218,8 @@ class PSU:
             Procena sredine ili totala.
         stderr : float
             Standardna greška procene.
-        naziv : str
-            Naziv procene (radi ispisa).
-        """
+        parametar : float, opciono
+            Prava vrednost za proveru da li se nalazi u intervalu.'''
         parametar = self.Ym if parametar is None else parametar
         intervali = []
         for a in self.alfa:
@@ -255,24 +243,21 @@ class PSU:
         return df_intervali
 
     def plot(self, k=1000):
-        """
-        Vizualizuje distribuciju Bootstrapping proseka plata iz uzorka,
+        ''' Vizualizuje distribuciju Bootstrapping proseka plata iz uzorka,
         koristeći plotDist iz klase Bootstrapping.
         
         Parametri:
         ----------
         k : int
-            Broj Bootstrapping uzoraka. Podrazumevano: 1000
-        """
+            Broj Bootstrapping uzoraka. Podrazumevano: 1000'''
         if self.bs is None:
             self.bs = Bootstrapping(self.df, alfa=self.alfa, n=self.n)
             self.bs.fit(k)
         self.bs.plotDist(alfa= self.alfa, target = self.y.mean())
     def minimalni_interval(self, k = None):
-        """
-        Vraća najmanji interval poverenja (tj. najveći nivo značajnosti α)
-        u kojem target upada u Bootstrapping distribuciju.
-        """
+        ''' Određuje najveći nivo značajnosti (najmanji interval poverenja) u kojem
+        se prosečna vrednost ciljne promenljive iz uzorka nalazi unutar 
+        bootstrap distribucije srednjih vrednosti.''' 
         target_mean = self.y.mean()
         alfe = np.linspace(0.001, 1, 500)[::-1]
         k = 3000 if k is None else k
@@ -296,11 +281,26 @@ class PSU:
 
 
 class SSU(PSU):
-    """
-    Stratifikovani Slučajni Uzorak (SSU) - podklasa PSU za rad sa stratifikacijom
-    """
-
+    ''' Stratifikovani Slučajni Uzorak (SSU) - podklasa PSU klase,
+    koristi se za ocenjivanje sredine i totala populacije sa stratifikacijom.
+    
+    Omogućava količničko i regresiono ocenjivanje unutar stratumskih podela,
+    uz posebne i kombinovane procene, kao i proračun varijanse po stratumima.'''
     def __init__(self, df, X, Y, n, stratumi, alfa=[0.1, 0.05, 0.01], seed=1304):
+        ''' df : pd.DataFrame
+            Populacija (kompletan skup podataka).
+        X : pd.DataFrame
+            Matrica nezavisnih promenljivih.
+        Y : pd.Series
+            Zavisna promenljiva (npr. 'plata').
+        n : int
+            Veličina ukupnog uzorka.
+        stratumi : list[str]
+            Kolone koje definišu stratume.
+        alfa : list[float], opciono
+            Nivoi značajnosti. Podrazumevani: [0.1, 0.05, 0.01].
+        seed : int, opciono
+            Seed za reproduktivnost izbora uzorka.'''
         super().__init__(df, X, Y, n, alfa=alfa, seed=seed)
 
         self.df['Strata'] = self.df[stratumi].astype(str).agg('_'.join, axis=1)
@@ -328,60 +328,103 @@ class SSU(PSU):
         self.S2h = self.uzorak.groupby('Strata')['plata'].var()
         
     def describe(self):
+        '''Prikazuje deskriptivnu statistiku uzorka i populacije, po stratumima.
+    Takođe računa i prikazuje ocene sredine i totala uz intervale poverenja.'''
         print("--- Uzorak: ---")
         display(pd.DataFrame(self.nh))
         display(self.uzorak.describe())
         print("--- Populacija: ---")
         display(self.df.describe())
-        ybarSt = self.Nh @ self.ybarh / self.N
+        self.ybarSt = self.Nh @ self.ybarh / self.N
 
         VybarSt = ((1 - self.f) / self.N) * self.Wh @ (self.S2h)
         SybarSt = np.sqrt(VybarSt)
         intervali = []
-        self.intervaliPoverenja(ybarSt, SybarSt)
+        self.intervaliPoverenja(self.ybarSt, SybarSt)
 
-        YtotalSt = self.N * ybarSt
+        YtotalSt = self.N * self.ybarSt
         SYtotalSt = self.N * SybarSt
 
         self.intervaliPoverenja(YtotalSt, SYtotalSt, parametar= self.Y.sum())
         
     def kolicnickoOcenjivanje(self):
+        ''' Sprovodi posebnu i kombinovanu količničku ocenu sredine i totala
+    koristeći podatke po stratumima. Računa korelacije i varijanse.
+
+    Prikazuje rezultate sa pristrasnošću, intervalima poverenja
+    i srednjim kvadratnim greškama (SKG).'''
         Yh = self.df.groupby('Strata')['plata'].sum()
         Xh = self.df.groupby('Strata')['obrazovanje'].sum()
         Rh = Yh / Xh
-        rho = self.uzorak.groupby('Strata')['obrazovanje'].corr(self.y)
+        self.rho = self.uzorak.groupby('Strata')['obrazovanje'].corr(self.y)
         yh = self.uzorak.groupby('Strata')['plata'].sum()
         xh = self.uzorak.groupby('Strata')['obrazovanje'].sum()
         Sx2h = self.uzorak.groupby('Strata')['obrazovanje'].var()
         YtotalRs = (yh / xh) @ (Xh)
         SYtotalRs = np.sqrt((((np.square(self.Nh) * (1 - self.f))) / self.nh) @ 
-                            ((self.S2h + np.square(Rh) * Sx2h - (2 * Rh * rho.values * np.sqrt(self.S2h) * np.sqrt(Sx2h)))))
-        print('\n--- KOLIČNIČKO OCENJIVANJE ---\n')
+                            ((self.S2h + np.square(Rh) * Sx2h - (2 * Rh * self.rho.values * np.sqrt(self.S2h) * np.sqrt(Sx2h)))))
 
-        print('korelacija godina obrazovanja sa zaradom po stratumima'.upper(), display(pd.DataFrame(rho)), sep='\n')
-
-        self.intervaliPoverenja(YtotalRs, SYtotalRs, parametar= self.Y.sum())
+        YbarRs = YtotalRs / self.N
+        SYbarRs = SYtotalRs / self.N
         
+        print('\n--- POSEBNA KOLIČNIČKA OCENA ---\n')
+
+        print('korelacija godina obrazovanja sa zaradom po stratumima'.upper())
+        display(pd.DataFrame(self.rho))
+
+        self.intervaliPoverenja(YbarRs, SYbarRs, parametar= self.Ym)
+        self.intervaliPoverenja(YtotalRs, SYtotalRs, parametar= self.Ytotal)
+
+
+        print('\n--- KOMBINOVANA KOLIČNIČKA OCENA ---\n')
+        xbarh = self.uzorak.groupby('Strata')['obrazovanje'].mean()
+        xbarSt = self.Nh.dot(xbarh) / self.N
+        YtotalRc = self.ybarSt / xbarSt * self.Xtotal
+        YbarRc = YtotalRc / self.N
+
+        display(pd.DataFrame({'Ocena': [YbarRc, YtotalRc], 'Stvarna vrednost': [self.Ym, self.Ytotal],
+                              'Pristrasnost': [YbarRc - self.Ym, YtotalRc - self.Ytotal]} ,
+                             index=['Sredina', 'Total']))
+        self.SKGRs = np.square(YbarRs - self.Ym) + np.square(SYbarRs)
+
+
+    def regresionoOcenjivanje(self):
+        '''Regresiono ocenjivanje po stratumima: za svaki stratum posebno se trenira ONK model.
+
+        alfa : float
+            Nivo značajnosti
         
+        Prikazuje ocene sredina po stratumima, njihovu pristrasnost i
+        formira intervale poverenja za ukupnu regresionu procenu.
+        Računa SKG regresione metode.'''
+        x = self.uzorak[['obrazovanje', 'Strata']]
+        y = self.uzorak[['plata', 'Strata']]
+        X = self.df[['obrazovanje', 'Strata']]
+        Y = self.df[['plata', 'Strata']]
+        b = pd.DataFrame()
+        for ime, grupa in self.uzorak.groupby('Strata'):
+            y = grupa['plata']
+            x = grupa[['obrazovanje']]
+            model = ONK()
+            model.fit(x, y)
+            b[ime] = model.b
+        b = b.T
+        print('\n--- REGRESIONI KOEFICIENTI PO STRATUMIMA ---\n')
+        display(b)
 
-        
-# 
-# Ytotal90Rs = (round(YtotalRs - t * SYtotalRs), round(YtotalRs + t * SYtotalRs))
-# SYbarRs = SYtotalRs / N
-# YbarRs = YtotalRs / N
-# Ybar95Rs = (round(YbarRs - t * SYbarRs), round(YbarRs + t * SYtotalRs))
+        Xbarh = self.df.groupby('Strata')['obrazovanje'].mean()
+        xbarh = self.uzorak.groupby('Strata')['obrazovanje'].mean()
+        ybarlrh = self.ybarh + b.loc[:, 'obrazovanje'] * (Xbarh - xbarh)
+        ybarlrh.name = 'Ocena'
+        self.ybarh.name = 'Stvarna vrednost'
+        print('\n--- REGRESIONA OCENA PO STRATUMIMA ---\n')
+        display(pd.DataFrame({'Ocena': ybarlrh.values, 'Stvarna vrednost': self.ybarh.values, 'Pristrasnost': ybarlrh.values - self.ybarh.values},
+                             index = ybarlrh.index))
 
-# print('Posebna količnička ocena prosecne mesecne zarade je:\n', form(YbarRs), '\nPristrasnost', form(YbarRs - Ym))
-# print('Standardna devijacija posebne količničke ocene sredine stratifikovanim slucajnim uzorkom je', form(SYbarRs))
-# print('95% interval ocene totala posebnom kolicnickom ocenom je', Ybar95Rs)
-# print(f'Posebna kolicnicka ocena totala populacije {form(YtotalRs)}', f'Pristrasnost {form(YtotalRs - Ytotal)}', sep='\n')
-# print(f'Standardna devijacija ocene totala stratifikovanim slucajnim uzorkom je {form(SYtotalRs)}')
-# print('\nKombinovana kolicnicka ocena'.upper())
+        ybarlrs = self.Wh.dot(ybarlrh)
+        Sybarlrs = np.sqrt(((np.square(self.Wh) * (1 - self.fh)) / self.nh).dot(self.S2h * (1 - np.square(self.rho))))
+        self.intervaliPoverenja(ybarlrs, Sybarlrs, parametar= self.Ym)
 
-# xbarh = uzorak.groupby('Strata')['obrazovanje'].mean()
-# xbarSt = Nh.dot(xbarh) / N
-# YtotalRc = ybarSt / xbarSt * Xtotal
-# YbarRc = YtotalRc / N
-
-# print(f'Kombinovana kolicnicka ocena sredine populacije je {form(YbarRc)}', f'Pristrasnost {form(YbarRc - Ym)}', sep='\n')
-# print(f'Kombinovana kolicnicka ocena totala populacije je {form(YtotalRc)}', f'Pristrasnost {form(YtotalRc - Ytotal)}', sep='\n')
+        SKGLr = np.square(ybarlrs - self.Ym) + np.square(Sybarlrs)    
+        display(pd.DataFrame({'Vrednost': [form(self.SKGRs), form(SKGLr)]}, 
+                                     index=['SKG količničkog ocenjivanja','SKG regresionog ocenjivanja']))

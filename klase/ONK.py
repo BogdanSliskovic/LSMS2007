@@ -1,29 +1,11 @@
 from klase.funkcije import *
 
 class ONK:
-    '''
-    Klasa za regresionu analizu metodom običnih najmanjih kvadrata (ONK).
-    
-    Parametri:
-    ----------
-    alfa : float ili list, opciono
-        Rizik greške (nivo značajnosti) za statističko testiranje koeficijenata.
-        Podrazumevano: [0.1, 0.05, 0.01].
-
-    Atributi:
-    ----------
-    x : pd.DataFrame
-        Matrica nezavisnih promenljivih.
-    y : pd.Series
-        Zavisna promenljiva.
-    b : pd.Series
-        Regresioni koeficijenti.
-    bstd : pd.Series
-        Standardne greške koeficijenata.
-    tstat : pd.Series
-        T-vrednosti za koeficijente.
-        '''
+    ''' Klasa za regresionu analizu metodom običnih najmanjih kvadrata (ONK).'''
     def __init__ (self, alfa = None):
+        '''alfa : float ili list, opciono
+        Rizik greške za statističko testiranje koeficijenata.
+        Podrazumevano: [0.1, 0.05, 0.01].'''
         default = [0.1, 0.05, 0.01]
         if alfa is None:
             self.alfa = default
@@ -50,10 +32,10 @@ class ONK:
             Matrica nezavisnih promenljivih.
         y : pd.Series
             Zavisna promenljiva.
-        konstanta : bool
-            Da li uključiti slobodni član ('const').
+        konstanta : bool, opciono
+            Da li uključiti slobodni član.
         kategorije : list[str], opciono
-            Kategorijske promenljive za kreiranje dummy varijabli.
+            Lista kategorijskih promenljivih za kreiranje veštačkih varijabli.
 
         Rezultat:
         ----------
@@ -116,8 +98,8 @@ class ONK:
                 maska = (~self.b.index.str.contains('region')) & (~self.b.index.str.contains('const'))
                 return self.fitsig(alfa)
         if (abs(self.b[~maska].drop('const') / self.bstd[~maska].drop('const')) < self.t[alfa]).all():
-            self.x = self.x.drop(self.x.columns[self.x.columns.str.startswith('region')], axis = 1)
-            self.n = self.x.shape[1]
+            self.x = self.x.drop(x.columns[x.columns.str.startswith('region')], axis = 1)
+            self.n = x.shape[1]
             self.b = self.b[~self.b.index.str.startswith('region')]
             print(f'Regioni su statisticki neznacajni t statistike :\n {self.tstat[~maska].drop('const')}')
 
@@ -125,9 +107,7 @@ class ONK:
         
     @property
     def matOblik (self):
-        '''
-        Prikazuje regresionu jednačinu kao tekst.
-        '''
+        ''' Prikazuje regresionu jednačinu u tekstualnom obliku.'''
         koeficijenti = []
         for var,koef in self.b.items():
             if var.lower() == 'const':
@@ -143,7 +123,7 @@ class ONK:
 
         Parametri:
         ----------
-        vektor : pd.DataFrame
+        x : pd.DataFrame
             Matrica novih podataka za predikciju.
         mean : bool
             Da li vratiti srednju vrednost predikcija.
@@ -165,9 +145,20 @@ class ONK:
             return predikcija
 
     def vestacke(self, kategorije , x = None):
-        '''
-        Kreira vestacke promenljive za kategorijske podatke.
-        '''
+        '''Kreira dummy varijable za navedene kategorijske promenljive.
+
+        Parametri:
+        ----------
+        kategorije : list[str]
+            Lista kategorijskih promenljivih za konverziju.
+        x : pd.DataFrame, opciono
+            DataFrame za kreiranje dummy varijabli.
+            Ukoliko nije navedeno, koristi originalne podatke.
+
+        Rezultat:
+        ----------
+        pd.DataFrame
+            DataFrame sa dummy varijablama.'''
         x = self.x if x is None else x.copy()
         if 'const' not in x.columns:
             x.insert(0,'const',1)            
@@ -180,9 +171,7 @@ class ONK:
 
     @property
     def pregled(self):
-        """
-        Kratki pregled modela sa ključnim statistikama.
-        """
+        '''Prikazuje tabelu sa ključnim statističkim pokazateljima modela.'''
         ypred = self.predict(self.x)
         res = self.y - ypred
         res.name = 'reziduali'
